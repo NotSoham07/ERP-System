@@ -18,19 +18,29 @@ function Finance() {
     if (error) {
       console.error('Error fetching transactions:', error.message);
     } else {
-      setTransactions(data);
+      setTransactions(data || []);
     }
   };
 
   const addTransaction = async () => {
+    console.log('Adding transaction:', { type, amount, date, description });
     const { data, error } = await supabase.from('Transactions').insert([
       { type, amount, date, description }
     ]);
+
     if (error) {
       console.error('Error adding transaction:', error.message);
-    } else {
+      return;
+    }
+
+    console.log('Response from Supabase:', data);
+
+    if (data && data.length > 0) {
+      console.log('Transaction added:', data[0]);
       setTransactions([...transactions, data[0]]);
       resetForm();
+    } else {
+      console.error('No data returned from insert operation');
     }
   };
 
@@ -38,11 +48,17 @@ function Finance() {
     const { data, error } = await supabase.from('Transactions').update({
       type, amount, date, description
     }).eq('id', editingTransaction.id);
+
     if (error) {
       console.error('Error updating transaction:', error.message);
-    } else {
+      return;
+    }
+
+    if (data && data.length > 0) {
       setTransactions(transactions.map(txn => (txn.id === editingTransaction.id ? data[0] : txn)));
       resetForm();
+    } else {
+      console.error('No data returned from update operation');
     }
   };
 

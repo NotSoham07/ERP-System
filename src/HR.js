@@ -18,19 +18,29 @@ function HR() {
     if (error) {
       console.error('Error fetching employees:', error.message);
     } else {
-      setEmployees(data);
+      setEmployees(data || []);
     }
   };
 
   const addEmployee = async () => {
+    console.log('Adding employee:', { name, position, salary, department });
     const { data, error } = await supabase.from('Employees').insert([
       { name, position, salary, department }
     ]);
+
     if (error) {
       console.error('Error adding employee:', error.message);
-    } else {
+      return;
+    }
+
+    console.log('Response from Supabase:', data);
+    
+    if (data && data.length > 0) {
+      console.log('Employee added:', data[0]);
       setEmployees([...employees, data[0]]);
       resetForm();
+    } else {
+      console.error('No data returned from insert operation');
     }
   };
 
@@ -38,11 +48,17 @@ function HR() {
     const { data, error } = await supabase.from('Employees').update({
       name, position, salary, department
     }).eq('id', editingEmployee.id);
+    
     if (error) {
       console.error('Error updating employee:', error.message);
-    } else {
+      return;
+    }
+
+    if (data && data.length > 0) {
       setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? data[0] : emp)));
       resetForm();
+    } else {
+      console.error('No data returned from update operation');
     }
   };
 
