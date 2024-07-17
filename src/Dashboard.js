@@ -1,7 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-function Dashboard() {
+const Dashboard = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   return (
     <div>
       <h2>Dashboard</h2>
@@ -12,8 +21,9 @@ function Dashboard() {
           <li><Link to="/inventory">Inventory Module</Link></li>
         </ul>
       </nav>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
-}
+};
 
 export default Dashboard;
