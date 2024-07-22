@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './App.css';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ const Signup = () => {
   };
 
   return (
-    <div>
+    <div className="content">
       <h2>Signup</h2>
       <form onSubmit={handleSignup}>
         <input

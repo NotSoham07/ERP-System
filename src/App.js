@@ -7,6 +7,8 @@ import Dashboard from './Dashboard';
 import HR from './HR';
 import Finance from './Finance';
 import Inventory from './Inventory';
+import Sidebar from './Sidebar';
+import './App.css';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -17,42 +19,48 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hr"
-            element={
-              <ProtectedRoute>
-                <HR />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/finance"
-            element={
-              <ProtectedRoute>
-                <Finance />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/inventory"
-            element={
-              <ProtectedRoute>
-                <Inventory />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <div className="container">
+          <Sidebar />
+          <div className="main-content">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr"
+                element={
+                  <ProtectedRoute>
+                    <HR />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance"
+                element={
+                  <ProtectedRoute>
+                    <Finance />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/inventory"
+                element={
+                  <ProtectedRoute>
+                    <Inventory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/" element={<Navigate to="/login" />} />
+            </Routes>
+          </div>
+        </div>
       </Router>
     </AuthProvider>
   );

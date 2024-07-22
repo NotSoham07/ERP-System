@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './App.css';
 
 function Finance() {
   const [transactions, setTransactions] = useState([]);
@@ -80,7 +81,7 @@ function Finance() {
   };
 
   return (
-    <div>
+    <div className="content">
       <h2>Finance Module</h2>
       <input
         type="text"
@@ -109,21 +110,37 @@ function Finance() {
       <button onClick={editingTransaction ? updateTransaction : addTransaction}>
         {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
       </button>
-      <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            {transaction.type}: ${transaction.amount}
-            <button onClick={() => {
-              setType(transaction.type);
-              setAmount(transaction.amount);
-              setDate(transaction.date);
-              setDescription(transaction.description);
-              setEditingTransaction(transaction);
-            }}>Edit</button>
-            <button onClick={() => deleteTransaction(transaction.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map(transaction => (
+            <tr key={transaction.id}>
+              <td>{transaction.type}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.description}</td>
+              <td>
+                <button className="edit-btn" onClick={() => {
+                  setType(transaction.type);
+                  setAmount(transaction.amount);
+                  setDate(transaction.date);
+                  setDescription(transaction.description);
+                  setEditingTransaction(transaction);
+                }}>Edit</button>
+                <button className="delete-btn" onClick={() => deleteTransaction(transaction.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

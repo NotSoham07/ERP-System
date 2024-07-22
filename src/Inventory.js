@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './App.css';
 
 function Inventory() {
   const [items, setItems] = useState([]);
@@ -78,7 +79,7 @@ function Inventory() {
   };
 
   return (
-    <div>
+    <div className="content">
       <h2>Inventory Module</h2>
       <input
         type="text"
@@ -107,21 +108,37 @@ function Inventory() {
       <button onClick={editingItem ? updateItem : addItem}>
         {editingItem ? 'Update Item' : 'Add Item'}
       </button>
-      <ul>
-        {items.map(item => (
-          <li key={item.id}>
-            {item.name}: {item.quantity}
-            <button onClick={() => {
-              setName(item.name);
-              setQuantity(item.quantity);
-              setPrice(item.price);
-              setSupplier(item.supplier);
-              setEditingItem(item);
-            }}>Edit</button>
-            <button onClick={() => deleteItem(item.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Supplier</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(item => (
+            <tr key={item.id}>
+              <td>{item.name}</td>
+              <td>{item.quantity}</td>
+              <td>{item.price}</td>
+              <td>{item.supplier}</td>
+              <td>
+                <button className="edit-btn" onClick={() => {
+                  setName(item.name);
+                  setQuantity(item.quantity);
+                  setPrice(item.price);
+                  setSupplier(item.supplier);
+                  setEditingItem(item);
+                }}>Edit</button>
+                <button className="delete-btn" onClick={() => deleteItem(item.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

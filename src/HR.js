@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './App.css';
 
 function HR() {
   const [employees, setEmployees] = useState([]);
@@ -80,7 +81,7 @@ function HR() {
   };
 
   return (
-    <div>
+    <div className="content">
       <h2>HR Module</h2>
       <input
         type="text"
@@ -109,21 +110,37 @@ function HR() {
       <button onClick={editingEmployee ? updateEmployee : addEmployee}>
         {editingEmployee ? 'Update Employee' : 'Add Employee'}
       </button>
-      <ul>
-        {employees.map(employee => (
-          <li key={employee.id}>
-            {employee.name}
-            <button onClick={() => {
-              setName(employee.name);
-              setPosition(employee.position);
-              setSalary(employee.salary);
-              setDepartment(employee.department);
-              setEditingEmployee(employee);
-            }}>Edit</button>
-            <button onClick={() => deleteEmployee(employee.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Salary</th>
+            <th>Department</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employees.map(employee => (
+            <tr key={employee.id}>
+              <td>{employee.name}</td>
+              <td>{employee.position}</td>
+              <td>{employee.salary}</td>
+              <td>{employee.department}</td>
+              <td>
+                <button className="edit-btn" onClick={() => {
+                  setName(employee.name);
+                  setPosition(employee.position);
+                  setSalary(employee.salary);
+                  setDepartment(employee.department);
+                  setEditingEmployee(employee);
+                }}>Edit</button>
+                <button className="delete-btn" onClick={() => deleteEmployee(employee.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
