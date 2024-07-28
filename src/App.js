@@ -8,7 +8,7 @@ import HR from './HR';
 import Finance from './Finance';
 import Inventory from './Inventory';
 import Sidebar from './Sidebar';
-import './App.css';
+import './index.css';
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -19,9 +19,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="container">
+        <div className="flex">
           <Sidebar />
-          <div className="main-content">
+          <div className="flex-1 p-6">
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import './App.css';
+import './index.css';
 
 function HR() {
   const [employees, setEmployees] = useState([]);
@@ -9,6 +9,7 @@ function HR() {
   const [salary, setSalary] = useState('');
   const [department, setDepartment] = useState('');
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -17,56 +18,61 @@ function HR() {
   const fetchEmployees = async () => {
     const { data, error } = await supabase.from('Employees').select('*');
     if (error) {
-      console.error('Error fetching employees:', error.message);
+      setError('Error fetching employees');
+      console.error(error.message);
     } else {
       setEmployees(data || []);
     }
   };
 
+  const validateForm = () => {
+    if (!name || !position || !salary || !department) {
+      setError('All fields are required');
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
   const addEmployee = async () => {
-    console.log('Adding employee:', { name, position, salary, department });
+    if (!validateForm()) return;
+
     const { data, error } = await supabase.from('Employees').insert([
       { name, position, salary, department }
     ]);
 
     if (error) {
-      console.error('Error adding employee:', error.message);
+      setError('Error adding employee');
+      console.error(error.message);
       return;
     }
 
-    console.log('Response from Supabase:', data);
-    
-    if (data && data.length > 0) {
-      console.log('Employee added:', data[0]);
-      setEmployees([...employees, data[0]]);
-      resetForm();
-    } else {
-      console.error('No data returned from insert operation');
-    }
+    setEmployees([...employees, data[0]]);
+    resetForm();
   };
 
   const updateEmployee = async () => {
+    if (!validateForm()) return;
+
     const { data, error } = await supabase.from('Employees').update({
       name, position, salary, department
     }).eq('id', editingEmployee.id);
-    
+
     if (error) {
-      console.error('Error updating employee:', error.message);
+      setError('Error updating employee');
+      console.error(error.message);
       return;
     }
 
-    if (data && data.length > 0) {
-      setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? data[0] : emp)));
-      resetForm();
-    } else {
-      console.error('No data returned from update operation');
-    }
+    setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? data[0] : emp)));
+    resetForm();
   };
 
   const deleteEmployee = async (id) => {
     const { error } = await supabase.from('Employees').delete().eq('id', id);
     if (error) {
-      console.error('Error deleting employee:', error.message);
+      setError('Error deleting employee');
+      console.error(error.message);
     } else {
       setEmployees(employees.filter(emp => emp.id !== id));
     }
@@ -78,64 +84,70 @@ function HR() {
     setSalary('');
     setDepartment('');
     setEditingEmployee(null);
+    setError(null);
   };
 
   return (
     <div className="content">
-      <h2>HR Module</h2>
+      <h2 className="text-2xl font-bold mb-6">HR Module</h2>
+      {error && <div className="error text-red-500 mb-4">{error}</div>}
       <input
         type="text"
+        className="border border-gray-300 p-2 mb-4 w-full"
         placeholder="Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
       <input
         type="text"
+        className="border border-gray-300 p-2 mb-4 w-full"
         placeholder="Position"
         value={position}
         onChange={(e) => setPosition(e.target.value)}
       />
       <input
-        type="text"
+        type="number"
+        className="border border-gray-300 p-2 mb-4 w-full"
         placeholder="Salary"
         value={salary}
         onChange={(e) => setSalary(e.target.value)}
       />
       <input
         type="text"
+        className="border border-gray-300 p-2 mb-4 w-full"
         placeholder="Department"
         value={department}
         onChange={(e) => setDepartment(e.target.value)}
       />
-      <button onClick={editingEmployee ? updateEmployee : addEmployee}>
+      <button onClick={editingEmployee ? updateEmployee : addEmployee} className="bg-blue-500 text-white p-2 rounded">
         {editingEmployee ? 'Update Employee' : 'Add Employee'}
       </button>
-      <table>
+      <table className="table-auto w-full mt-6">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Position</th>
-            <th>Salary</th>
-            <th>Department</th>
-            <th>Actions</th>
+            <th className="px-4 py-2">Name</th>
+            <th className="px-4 py-2">Position</th>
+            <th className="px-4 py-2">Salary</th>
+            <th className="px-4 py-2">Department</th>
+            <th className="px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
           {employees.map(employee => (
-            <tr key={employee.id}>
-              <td>{employee.name}</td>
-              <td>{employee.position}</td>
-              <td>{employee.salary}</td>
-              <td>{employee.department}</td>
-              <td>
-                <button className="edit-btn" onClick={() => {
+            <tr key={employee.id} className="bg-gray-200">
+              <td className="border px-4 py-2">{employee.name}</td>
+              <td className="border px-4 py-2">{employee.position}</td>
+              <td className="border px-4 py-2">{employee.salary}</td>
+              <td className="border px-4 py-2">{employee.department}</td>
+              <td className="border px-4 py-2">
+                <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
                   setName(employee.name);
                   setPosition(employee.position);
                   setSalary(employee.salary);
                   setDepartment(employee.department);
                   setEditingEmployee(employee);
                 }}>Edit</button>
-                <button className="delete-btn" onClick={() => deleteEmployee(employee.id)}>Delete</button>
+                <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteEmployee(employee.id)}>Delete</button>
               </td>
             </tr>
           ))}

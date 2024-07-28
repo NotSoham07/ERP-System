@@ -5,11 +5,23 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [roles, setRoles] = useState([]);
 
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data: rolesData, error } = await supabase
+          .from('user_roles')
+          .select('roles(name)')
+          .eq('user_id', session.user.id);
+        if (error) {
+          console.error('Error fetching roles:', error.message);
+        } else {
+          setRoles(rolesData.map(role => role.roles.name));
+        }
+      }
     };
 
     getSession();
@@ -17,6 +29,22 @@ export const AuthProvider = ({ children }) => {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          const fetchRoles = async () => {
+            const { data: rolesData, error } = await supabase
+              .from('user_roles')
+              .select('roles(name)')
+              .eq('user_id', session.user.id);
+            if (error) {
+              console.error('Error fetching roles:', error.message);
+            } else {
+              setRoles(rolesData.map(role => role.roles.name));
+            }
+          };
+          fetchRoles();
+        } else {
+          setRoles([]);
+        }
       }
     );
 
@@ -47,10 +75,11 @@ export const AuthProvider = ({ children }) => {
       throw new Error(error.message);
     }
     setUser(null);
+    setRoles([]);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, roles, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Line, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import './App.css';
+import './index.css';
 
 ChartJS.register(
   CategoryScale,
@@ -12,6 +12,7 @@ ChartJS.register(
   BarElement,
   LineElement,
   PointElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
@@ -77,25 +78,40 @@ const Dashboard = () => {
     ],
   };
 
+  const doughnutData = {
+    labels: ['Revenue', 'Expenses'],
+    datasets: [
+      {
+        label: 'Finance',
+        data: [totalRevenue, totalRevenue * 0.4],
+        backgroundColor: ['#4caf50', '#f44336'],
+      },
+    ],
+  };
+
   return (
-    <div className="content">
-      <div className="card">
-        <h3>Employees Salary</h3>
-        <div className="chart-container">
-          <Line data={lineData} />
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="card">
+          <h3 className="text-xl font-bold mb-4">Employees Salary</h3>
+          <div className="chart-container">
+            <Line data={lineData} />
+          </div>
+        </div>
+        <div className="card">
+          <h3 className="text-xl font-bold mb-4">Inventory Quantity</h3>
+          <div className="chart-container">
+            <Bar data={barData} />
+          </div>
+        </div>
+        <div className="card">
+          <h3 className="text-xl font-bold mb-4">Finance Overview</h3>
+          <div className="chart-container">
+            <Doughnut data={doughnutData} />
+          </div>
         </div>
       </div>
-      <div className="card">
-        <h3>Inventory Quantity</h3>
-        <div className="chart-container">
-          <Bar data={barData} />
-        </div>
-      </div>
-      <div className="card">
-        <h3>Total Revenue</h3>
-        <p>${totalRevenue}</p>
-      </div>
-      <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleLogout} className="mt-6 bg-red-500 text-white p-2 rounded">Logout</button>
     </div>
   );
 };
