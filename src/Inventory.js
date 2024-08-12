@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { useAuth } from './AuthContext';  // Import useAuth to access user roles
 import './index.css';
 
 function Inventory() {
+  const { roles } = useAuth();  // Get the user's roles from the AuthContext
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -13,6 +15,18 @@ function Inventory() {
 
   useEffect(() => {
     fetchItems();
+
+    const subscription = supabase
+      .channel('public:Inventory')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Inventory' }, (payload) => {
+        console.log('Change received!', payload);
+        fetchItems();  // Re-fetch items whenever a change is detected
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const fetchItems = async () => {
@@ -47,7 +61,11 @@ function Inventory() {
       return;
     }
 
-    setItems([...items, data[0]]);
+    if (data && data.length > 0) {
+      setItems([...items, data[0]]);
+    } else {
+      setError('No data returned from the server');
+    }
     resetForm();
   };
 
@@ -64,7 +82,11 @@ function Inventory() {
       return;
     }
 
-    setItems(items.map(item => (item.id === editingItem.id ? data[0] : item)));
+    if (data && data.length > 0) {
+      setItems(items.map(item => (item.id === editingItem.id ? data[0] : item)));
+    } else {
+      setError('No data returned from the server');
+    }
     resetForm();
   };
 
@@ -91,37 +113,43 @@ function Inventory() {
     <div className="content">
       <h2 className="text-2xl font-bold mb-6">Inventory Module</h2>
       {error && <div className="error text-red-500 mb-4">{error}</div>}
-      <input
-        type="text"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="number"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Quantity"
-        value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
-      />
-      <input
-        type="number"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-      />
-      <input
-        type="text"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Supplier"
-        value={supplier}
-        onChange={(e) => setSupplier(e.target.value)}
-      />
-      <button onClick={editingItem ? updateItem : addItem} className="bg-blue-500 text-white p-2 rounded">
-        {editingItem ? 'Update Item' : 'Add Item'}
-      </button>
+      {(roles.includes('admin') || roles.includes('manager')) ? (
+        <>
+          <input
+            type="text"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            type="number"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+          <input
+            type="number"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          <input
+            type="text"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Supplier"
+            value={supplier}
+            onChange={(e) => setSupplier(e.target.value)}
+          />
+          <button onClick={editingItem ? updateItem : addItem} className="bg-blue-500 text-white p-2 rounded">
+            {editingItem ? 'Update Item' : 'Add Item'}
+          </button>
+        </>
+      ) : (
+        <p>You do not have permission to add or edit items.</p>
+      )}
       <table className="table-auto w-full mt-6">
         <thead>
           <tr>
@@ -140,14 +168,20 @@ function Inventory() {
               <td className="border px-4 py-2">{item.price}</td>
               <td className="border px-4 py-2">{item.supplier}</td>
               <td className="border px-4 py-2">
-                <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
-                  setName(item.name);
-                  setQuantity(item.quantity);
-                  setPrice(item.price);
-                  setSupplier(item.supplier);
-                  setEditingItem(item);
-                }}>Edit</button>
-                <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteItem(item.id)}>Delete</button>
+                {(roles.includes('admin') || roles.includes('manager')) ? (
+                  <>
+                    <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
+                      setName(item.name);
+                      setQuantity(item.quantity);
+                      setPrice(item.price);
+                      setSupplier(item.supplier);
+                      setEditingItem(item);
+                    }}>Edit</button>
+                    <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteItem(item.id)}>Delete</button>
+                  </>
+                ) : (
+                  <p>You do not have permission to perform actions on this item.</p>
+                )}
               </td>
             </tr>
           ))}

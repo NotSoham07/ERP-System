@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { useAuth } from './AuthContext';  // Import useAuth to access user roles
 import './index.css';
 
 function Finance() {
+  const { roles } = useAuth();  // Get the user's roles from the AuthContext
   const [transactions, setTransactions] = useState([]);
   const [type, setType] = useState('');
   const [amount, setAmount] = useState('');
@@ -13,6 +15,18 @@ function Finance() {
 
   useEffect(() => {
     fetchTransactions();
+
+    const subscription = supabase
+      .channel('public:Transactions')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Transactions' }, (payload) => {
+        console.log('Change received!', payload);
+        fetchTransactions();  // Re-fetch transactions whenever a change is detected
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   const fetchTransactions = async () => {
@@ -47,7 +61,11 @@ function Finance() {
       return;
     }
 
-    setTransactions([...transactions, data[0]]);
+    if (data && data.length > 0) {
+      setTransactions([...transactions, data[0]]);
+    } else {
+      setError('No data returned from the server');
+    }
     resetForm();
   };
 
@@ -64,7 +82,11 @@ function Finance() {
       return;
     }
 
-    setTransactions(transactions.map(txn => (txn.id === editingTransaction.id ? data[0] : txn)));
+    if (data && data.length > 0) {
+      setTransactions(transactions.map(txn => (txn.id === editingTransaction.id ? data[0] : txn)));
+    } else {
+      setError('No data returned from the server');
+    }
     resetForm();
   };
 
@@ -91,37 +113,43 @@ function Finance() {
     <div className="content">
       <h2 className="text-2xl font-bold mb-6">Finance Module</h2>
       {error && <div className="error text-red-500 mb-4">{error}</div>}
-      <input
-        type="text"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Type"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-      />
-      <input
-        type="number"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      <input
-        type="date"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-      <input
-        type="text"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button onClick={editingTransaction ? updateTransaction : addTransaction} className="bg-blue-500 text-white p-2 rounded">
-        {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
-      </button>
+      {(roles.includes('admin') || roles.includes('manager')) ? (
+        <>
+          <input
+            type="text"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Type"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          />
+          <input
+            type="number"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <input
+            type="date"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <input
+            type="text"
+            className="border border-gray-300 p-2 mb-4 w-full"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <button onClick={editingTransaction ? updateTransaction : addTransaction} className="bg-blue-500 text-white p-2 rounded">
+            {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
+          </button>
+        </>
+      ) : (
+        <p>You do not have permission to add or edit transactions.</p>
+      )}
       <table className="table-auto w-full mt-6">
         <thead>
           <tr>
@@ -140,14 +168,20 @@ function Finance() {
               <td className="border px-4 py-2">{transaction.date}</td>
               <td className="border px-4 py-2">{transaction.description}</td>
               <td className="border px-4 py-2">
-                <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
-                  setType(transaction.type);
-                  setAmount(transaction.amount);
-                  setDate(transaction.date);
-                  setDescription(transaction.description);
-                  setEditingTransaction(transaction);
-                }}>Edit</button>
-                <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteTransaction(transaction.id)}>Delete</button>
+                {(roles.includes('admin') || roles.includes('manager')) ? (
+                  <>
+                    <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
+                      setType(transaction.type);
+                      setAmount(transaction.amount);
+                      setDate(transaction.date);
+                      setDescription(transaction.description);
+                      setEditingTransaction(transaction);
+                    }}>Edit</button>
+                    <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteTransaction(transaction.id)}>Delete</button>
+                  </>
+                ) : (
+                  <p>You do not have permission to perform actions on this transaction.</p>
+                )}
               </td>
             </tr>
           ))}
