@@ -1,4 +1,6 @@
 # ERP System
+- **You can test it out live by creating an account at**: [https://notanerpsystem.netlify.app/signup](https://notanerpsystem.netlify.app/signup)
+- **Or using email: `employee@erp.com` & pass: `employee` at**: [https://notanerpsystem.netlify.app/login](https://notanerpsystem.netlify.app/login)
 
 ## Project Overview
 The ERP System is a comprehensive application designed to manage various aspects of a business, including Human Resources (HR), Finance, Inventory, and Projects. The system is built with a modular approach, allowing different departments to manage their data and processes efficiently. The application is equipped with role-based access control to ensure that sensitive data and functionalities are restricted to authorized users.
