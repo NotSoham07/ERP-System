@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';  // Import useAuth to access user roles
-import './index.css';
+import { useAuth } from './AuthContext';
+import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 
 function Inventory() {
-  const { roles } = useAuth();  // Get the user's roles from the AuthContext
+  const { roles } = useAuth();
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -20,7 +20,7 @@ function Inventory() {
       .channel('public:Inventory')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Inventory' }, (payload) => {
         console.log('Change received!', payload);
-        fetchItems();  // Re-fetch items whenever a change is detected
+        fetchItems();
       })
       .subscribe();
 
@@ -110,83 +110,133 @@ function Inventory() {
   };
 
   return (
-    <div className="content">
-      <h2 className="text-2xl font-bold mb-6">Inventory Module</h2>
-      {error && <div className="error text-red-500 mb-4">{error}</div>}
+    <div>
+      <Typography variant="h4" gutterBottom>Inventory Module</Typography>
+      {error && <Typography color="error" gutterBottom>{error}</Typography>}
       {(roles.includes('admin') || roles.includes('manager')) ? (
         <>
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Name"
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
             value={name}
             onChange={(e) => setName(e.target.value)}
+            margin="normal"
           />
-          <input
-            type="number"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Quantity"
+          <TextField
+            label="Quantity"
+            variant="outlined"
+            fullWidth
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-          />
-          <input
+            margin="normal"
             type="number"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Price"
+          />
+          <TextField
+            label="Price"
+            variant="outlined"
+            fullWidth
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            margin="normal"
+            type="number"
           />
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Supplier"
+          <TextField
+            label="Supplier"
+            variant="outlined"
+            fullWidth
             value={supplier}
             onChange={(e) => setSupplier(e.target.value)}
+            margin="normal"
           />
-          <button onClick={editingItem ? updateItem : addItem} className="bg-blue-500 text-white p-2 rounded">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={editingItem ? updateItem : addItem}
+            sx={{ mt: 2 }}
+          >
             {editingItem ? 'Update Item' : 'Add Item'}
-          </button>
+          </Button>
         </>
       ) : (
-        <p>You do not have permission to add or edit items.</p>
+        <Typography>You do not have permission to add or edit items.</Typography>
       )}
-      <table className="table-auto w-full mt-6">
-        <thead>
-          <tr>
-            <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Quantity</th>
-            <th className="px-4 py-2">Price</th>
-            <th className="px-4 py-2">Supplier</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(item => (
-            <tr key={item.id} className="bg-gray-200">
-              <td className="border px-4 py-2">{item.name}</td>
-              <td className="border px-4 py-2">{item.quantity}</td>
-              <td className="border px-4 py-2">{item.price}</td>
-              <td className="border px-4 py-2">{item.supplier}</td>
-              <td className="border px-4 py-2">
-                {(roles.includes('admin') || roles.includes('manager')) ? (
-                  <>
-                    <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
-                      setName(item.name);
-                      setQuantity(item.quantity);
-                      setPrice(item.price);
-                      setSupplier(item.supplier);
-                      setEditingItem(item);
-                    }}>Edit</button>
-                    <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteItem(item.id)}>Delete</button>
-                  </>
-                ) : (
-                  <p>You do not have permission to perform actions on this item.</p>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table>
+
+        <TableHead>
+  <TableRow>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Name
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Quantity
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Price
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Supplier
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Actions
+      </Typography>
+    </TableCell>
+  </TableRow>
+</TableHead>
+
+
+          
+          <TableBody>
+            {items.map(item => (
+              <TableRow key={item.id}>
+                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.price}</TableCell>
+                <TableCell>{item.supplier}</TableCell>
+                <TableCell>
+                  {(roles.includes('admin') || roles.includes('manager')) ? (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        onClick={() => {
+                          setName(item.name);
+                          setQuantity(item.quantity);
+                          setPrice(item.price);
+                          setSupplier(item.supplier);
+                          setEditingItem(item);
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => deleteItem(item.id)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  ) : (
+                    <Typography>No actions available</Typography>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }

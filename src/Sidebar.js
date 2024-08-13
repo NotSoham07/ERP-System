@@ -1,38 +1,72 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from './AuthContext';  // Import useAuth to access user roles
-import './App.css';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import PeopleIcon from '@mui/icons-material/People';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { useAuth } from './AuthContext';
 
 const Sidebar = () => {
-  const { roles } = useAuth();  // Get the user's roles from the AuthContext
+  const { roles } = useAuth();
 
   return (
-    <div className="w-64 bg-gray-900 text-gray-100 h-screen p-6">
-      <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
-      <ul>
-        <li className="mb-4">
-          <Link to="/dashboard" className="text-gray-300 hover:text-white">Home</Link>
-        </li>
-        <li className="mb-4">
-          <Link to="/hr" className="text-gray-300 hover:text-white">HR Module</Link>
-        </li>
-        <li className="mb-4">
-          <Link to="/finance" className="text-gray-300 hover:text-white">Finance Module</Link>
-        </li>
-        <li className="mb-4">
-          <Link to="/inventory" className="text-gray-300 hover:text-white">Inventory Module</Link>
-        </li>
-        <li className="mb-4">
-          <Link to="/projects" className="text-gray-300 hover:text-white">Projects Module</Link>
-        </li>
-        {/* Admin-specific link */}
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: 240,
+        flexShrink: 0,
+        [`& .MuiDrawer-paper`]: { width: 240, boxSizing: 'border-box' },
+      }}
+    >
+      <div>
+        <Typography variant="h6" sx={{ m: 2, textAlign: 'center' }}>
+          Dashboard
+        </Typography>
+      </div>
+      <List>
+        <ListItem button component={Link} to="/dashboard">
+          <ListItemIcon>
+            <DashboardIcon />
+          </ListItemIcon>
+          <ListItemText primary="Home" />
+        </ListItem>
+        <ListItem button component={Link} to="/hr">
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="HR Module" />
+        </ListItem>
+        <ListItem button component={Link} to="/finance">
+          <ListItemIcon>
+            <AttachMoneyIcon />
+          </ListItemIcon>
+          <ListItemText primary="Finance Module" />
+        </ListItem>
+        <ListItem button component={Link} to="/inventory">
+          <ListItemIcon>
+            <InventoryIcon />
+          </ListItemIcon>
+          <ListItemText primary="Inventory Module" />
+        </ListItem>
+        <ListItem button component={Link} to="/projects">
+          <ListItemIcon>
+            <AssignmentIcon />
+          </ListItemIcon>
+          <ListItemText primary="Projects Module" />
+        </ListItem>
         {roles.includes('admin') && (
-          <li className="mb-4">
-            <Link to="/admin/roles" className="text-gray-300 hover:text-white">Manage User Roles</Link>
-          </li>
+          <ListItem button component={Link} to="/admin/roles">
+            <ListItemIcon>
+              <AdminPanelSettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Manage User Roles" />
+          </ListItem>
         )}
-      </ul>
-    </div>
+      </List>
+    </Drawer>
   );
 };
 

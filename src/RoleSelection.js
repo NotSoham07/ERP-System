@@ -1,55 +1,44 @@
 import React, { useState } from 'react';
+import { Button, Typography, RadioGroup, FormControlLabel, Radio, Paper, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import './App.css';
+import { useAuth } from './AuthContext';
 
-const RoleSelection = ({ onSelectRole }) => {
-  const [selectedRole, setSelectedRole] = useState('');
+function RoleSelection() {
+  const [selectedRole, setLocalSelectedRole] = useState('');  // Local state for role selection
   const navigate = useNavigate();
+  const { setSelectedRole } = useAuth();  // Accessing setSelectedRole from context
 
-  const handleRoleSelect = (role) => {
-    setSelectedRole(role);
-  };
-
-  const handleNext = () => {
+  const handleRoleSelection = () => {
     if (selectedRole) {
-      onSelectRole(selectedRole);
+      setSelectedRole(selectedRole);  // Update role in context
       navigate('/admin/signup');
-    } else {
-      alert('Please select a role before proceeding.');
     }
   };
 
   return (
-    <div className="content">
-      <h2 className="text-2xl font-bold mb-6">Select Role for New User</h2>
-      <div className="flex flex-col space-y-4 text-black">
-        <button
-          className={`p-2 border rounded ${selectedRole === 'manager' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-          onClick={() => handleRoleSelect('manager')}
+    <Container maxWidth="sm">
+      <Paper elevation={3} style={{ padding: 20, marginTop: 20 }}>
+        <Typography variant="h4" gutterBottom>Select Role for New User</Typography>
+        <RadioGroup
+          value={selectedRole}
+          onChange={(e) => setLocalSelectedRole(e.target.value)}  // Update local state
         >
-          Manager
-        </button>
-        <button
-          className={`p-2 border rounded ${selectedRole === 'employee' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-          onClick={() => handleRoleSelect('employee')}
+          <FormControlLabel value="manager" control={<Radio />} label="Manager" />
+          <FormControlLabel value="employee" control={<Radio />} label="Employee" />
+          <FormControlLabel value="admin" control={<Radio />} label="Admin" />
+        </RadioGroup>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleRoleSelection}
+          disabled={!selectedRole}
+          sx={{ mt: 2 }}
         >
-          Employee
-        </button>
-        <button
-          className={`p-2 border rounded ${selectedRole === 'admin' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-          onClick={() => handleRoleSelect('admin')}
-        >
-          Admin
-        </button>
-      </div>
-      <button
-        onClick={handleNext}
-        className="mt-6 bg-blue-500 text-white p-2 rounded"
-      >
-        Next
-      </button>
-    </div>
+          Next
+        </Button>
+      </Paper>
+    </Container>
   );
-};
+}
 
 export default RoleSelection;

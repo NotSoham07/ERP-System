@@ -6,6 +6,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState(''); // New state for selected role
 
   useEffect(() => {
     const getSession = async () => {
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, roles, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, roles, selectedRole, setSelectedRole, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

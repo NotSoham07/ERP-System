@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';  // Import useAuth to access user roles
-import './index.css';
+import { useAuth } from './AuthContext';
+import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 
 function HR() {
-  const { roles } = useAuth();  // Get the user's roles from the AuthContext
+  const { roles } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [name, setName] = useState('');
   const [position, setPosition] = useState('');
@@ -20,7 +20,7 @@ function HR() {
       .channel('public:Employees')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Employees' }, (payload) => {
         console.log('Change received!', payload);
-        fetchEmployees();  // Re-fetch employees whenever a change is detected
+        fetchEmployees();
       })
       .subscribe();
 
@@ -111,82 +111,127 @@ function HR() {
 
   return (
     <div className="content">
-      <h2 className="text-2xl font-bold mb-6">HR Module</h2>
-      {error && <div className="error text-red-500 mb-4">{error}</div>}
+      <Typography variant="h4" gutterBottom>HR Module</Typography>
+      {error && <Typography color="error" gutterBottom>{error}</Typography>}
       {(roles.includes('admin') || roles.includes('manager')) ? (
         <>
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Name"
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
             value={name}
             onChange={(e) => setName(e.target.value)}
+            margin="normal"
           />
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Position"
+          <TextField
+            label="Position"
+            variant="outlined"
+            fullWidth
             value={position}
             onChange={(e) => setPosition(e.target.value)}
+            margin="normal"
           />
-          <input
-            type="number"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Salary"
+          <TextField
+            label="Salary"
+            variant="outlined"
+            fullWidth
             value={salary}
             onChange={(e) => setSalary(e.target.value)}
+            margin="normal"
+            type="number"
           />
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Department"
+          <TextField
+            label="Department"
+            variant="outlined"
+            fullWidth
             value={department}
             onChange={(e) => setDepartment(e.target.value)}
+            margin="normal"
           />
-          <button onClick={editingEmployee ? updateEmployee : addEmployee} className="bg-blue-500 text-white p-2 rounded">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={editingEmployee ? updateEmployee : addEmployee}
+            sx={{ mt: 2 }}
+          >
             {editingEmployee ? 'Update Employee' : 'Add Employee'}
-          </button>
+          </Button>
         </>
       ) : (
-        <p>You do not have permission to add or edit employees.</p>
+        <Typography>You do not have permission to add or edit employees.</Typography>
       )}
-      <table className="table-auto w-full mt-6">
-        <thead>
-          <tr>
-            <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Position</th>
-            <th className="px-4 py-2">Salary</th>
-            <th className="px-4 py-2">Department</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {employees.map(employee => (
-            <tr key={employee.id} className="bg-gray-200">
-              <td className="border px-4 py-2">{employee.name}</td>
-              <td className="border px-4 py-2">{employee.position}</td>
-              <td className="border px-4 py-2">{employee.salary}</td>
-              <td className="border px-4 py-2">{employee.department}</td>
-              <td className="border px-4 py-2">
-                {(roles.includes('admin') || roles.includes('manager')) ? (
-                  <>
-                    <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
-                      setName(employee.name);
-                      setPosition(employee.position);
-                      setSalary(employee.salary);
-                      setDepartment(employee.department);
-                      setEditingEmployee(employee);
-                    }}>Edit</button>
-                    <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteEmployee(employee.id)}>Delete</button>
-                  </>
-                ) : (
-                  <p>You do not have permission to perform actions on this employee.</p>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <Typography variant="body1" fontWeight="bold">
+                  Name
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1" fontWeight="bold">
+                  Position
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1" fontWeight="bold">
+                  Salary
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1" fontWeight="bold">
+                  Department
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body1" fontWeight="bold">
+                  Actions
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {employees.map(employee => (
+              <TableRow key={employee.id}>
+                <TableCell>{employee.name}</TableCell>
+                <TableCell>{employee.position}</TableCell>
+                <TableCell>{employee.salary}</TableCell>
+                <TableCell>{employee.department}</TableCell>
+                <TableCell>
+                  {(roles.includes('admin') || roles.includes('manager')) ? (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        onClick={() => {
+                          setName(employee.name);
+                          setPosition(employee.position);
+                          setSalary(employee.salary);
+                          setDepartment(employee.department);
+                          setEditingEmployee(employee);
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => deleteEmployee(employee.id)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  ) : (
+                    <Typography>No actions available</Typography>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }

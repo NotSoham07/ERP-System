@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { useAuth } from './AuthContext';  // Import useAuth to access user roles
-import './index.css';
+import { useAuth } from './AuthContext';
+import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 
 function Finance() {
-  const { roles } = useAuth();  // Get the user's roles from the AuthContext
+  const { roles } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [type, setType] = useState('');
   const [amount, setAmount] = useState('');
@@ -20,7 +20,7 @@ function Finance() {
       .channel('public:Transactions')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Transactions' }, (payload) => {
         console.log('Change received!', payload);
-        fetchTransactions();  // Re-fetch transactions whenever a change is detected
+        fetchTransactions();
       })
       .subscribe();
 
@@ -110,83 +110,130 @@ function Finance() {
   };
 
   return (
-    <div className="content">
-      <h2 className="text-2xl font-bold mb-6">Finance Module</h2>
-      {error && <div className="error text-red-500 mb-4">{error}</div>}
+    <div>
+      <Typography variant="h4" gutterBottom>Finance Module</Typography>
+      {error && <Typography color="error" gutterBottom>{error}</Typography>}
       {(roles.includes('admin') || roles.includes('manager')) ? (
         <>
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Type"
+          <TextField
+            label="Type"
+            variant="outlined"
+            fullWidth
             value={type}
             onChange={(e) => setType(e.target.value)}
+            margin="normal"
           />
-          <input
-            type="number"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Amount"
+          <TextField
+            label="Amount"
+            variant="outlined"
+            fullWidth
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            margin="normal"
+            type="number"
           />
-          <input
-            type="date"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Date"
+          <TextField
+            label="Date"
+            variant="outlined"
+            fullWidth
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            margin="normal"
+            type="date"
           />
-          <input
-            type="text"
-            className="border border-gray-300 p-2 mb-4 w-full"
-            placeholder="Description"
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            margin="normal"
           />
-          <button onClick={editingTransaction ? updateTransaction : addTransaction} className="bg-blue-500 text-white p-2 rounded">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={editingTransaction ? updateTransaction : addTransaction}
+            sx={{ mt: 2 }}
+          >
             {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
-          </button>
+          </Button>
         </>
       ) : (
-        <p>You do not have permission to add or edit transactions.</p>
+        <Typography>You do not have permission to add or edit transactions.</Typography>
       )}
-      <table className="table-auto w-full mt-6">
-        <thead>
-          <tr>
-            <th className="px-4 py-2">Type</th>
-            <th className="px-4 py-2">Amount</th>
-            <th className="px-4 py-2">Date</th>
-            <th className="px-4 py-2">Description</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map(transaction => (
-            <tr key={transaction.id} className="bg-gray-200">
-              <td className="border px-4 py-2">{transaction.type}</td>
-              <td className="border px-4 py-2">{transaction.amount}</td>
-              <td className="border px-4 py-2">{transaction.date}</td>
-              <td className="border px-4 py-2">{transaction.description}</td>
-              <td className="border px-4 py-2">
-                {(roles.includes('admin') || roles.includes('manager')) ? (
-                  <>
-                    <button className="bg-green-500 text-white p-1 rounded mr-2" onClick={() => {
-                      setType(transaction.type);
-                      setAmount(transaction.amount);
-                      setDate(transaction.date);
-                      setDescription(transaction.description);
-                      setEditingTransaction(transaction);
-                    }}>Edit</button>
-                    <button className="bg-red-500 text-white p-1 rounded" onClick={() => deleteTransaction(transaction.id)}>Delete</button>
-                  </>
-                ) : (
-                  <p>You do not have permission to perform actions on this transaction.</p>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table>
+        <TableHead>
+  <TableRow>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Type
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Amount
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Date
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Description
+      </Typography>
+    </TableCell>
+    <TableCell>
+      <Typography variant="body1" fontWeight="bold">
+        Actions
+      </Typography>
+    </TableCell>
+  </TableRow>
+</TableHead>
+
+          <TableBody>
+            {transactions.map(transaction => (
+              <TableRow key={transaction.id}>
+                <TableCell>{transaction.type}</TableCell>
+                <TableCell>{transaction.amount}</TableCell>
+                <TableCell>{transaction.date}</TableCell>
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell>
+                  {(roles.includes('admin') || roles.includes('manager')) ? (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        onClick={() => {
+                          setType(transaction.type);
+                          setAmount(transaction.amount);
+                          setDate(transaction.date);
+                          setDescription(transaction.description);
+                          setEditingTransaction(transaction);
+                        }}
+                        sx={{ mr: 1 }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => deleteTransaction(transaction.id)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  ) : (
+                    <Typography>No actions available</Typography>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }

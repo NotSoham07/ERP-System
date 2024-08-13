@@ -1,73 +1,68 @@
 import React, { useState } from 'react';
+import { useAuth } from './AuthContext';
 import { supabase } from './supabaseClient';
-import './App.css';
+import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Typography, Container } from '@mui/material';
 
-const AdminSignup = ({ selectedRole }) => {
+function AdminSignup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { selectedRole } = useAuth(); // Access selectedRole from context
 
   const handleSignup = async () => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
 
-    if (error) {
-      setMessage(`Error: ${error.message}`);
-      return;
-    }
+      // Insert user role in the database
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([{ user_id: data.user.id, role: selectedRole }]);
 
-    const userId = data.user.id;
+      if (roleError) throw roleError;
 
-    const { data: roleData, error: roleError } = await supabase
-      .from('roles')
-      .select('id')
-      .eq('name', selectedRole)
-      .single();
-
-    if (roleError) {
-      setMessage(`Error fetching role: ${roleError.message}`);
-      return;
-    }
-
-    const { error: assignRoleError } = await supabase
-      .from('user_roles')
-      .insert([{ user_id: userId, role_id: roleData.id }]);
-
-    if (assignRoleError) {
-      setMessage(`Error assigning role: ${assignRoleError.message}`);
-    } else {
-      setMessage(`User created successfully as ${selectedRole}`);
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error.message);
     }
   };
 
   return (
-    <div className="content">
-      <h2 className="text-2xl font-bold mb-6">Create a New {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}</h2>
-      <input
-        type="email"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Email"
+    <Container maxWidth="xs">
+      <Typography variant="h4" align="center" gutterBottom>
+        Signup as {selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}
+      </Typography>
+      {error && <Typography color="error" align="center" gutterBottom>{error}</Typography>}
+      <TextField
+        label="Email"
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <input
+      <TextField
+        label="Password"
         type="password"
-        className="border border-gray-300 p-2 mb-4 w-full"
-        placeholder="Password"
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
         onClick={handleSignup}
-        className="bg-blue-500 text-white p-2 rounded"
+        sx={{ mt: 2 }}
       >
-        Sign Up
-      </button>
-      {message && <p className="mt-4 text-white">{message}</p>}
-    </div>
+        Signup
+      </Button>
+    </Container>
   );
-};
+}
 
 export default AdminSignup;
