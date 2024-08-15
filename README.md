@@ -74,9 +74,6 @@ The application uses Supabase for real-time data updates. Data changes are autom
 2. Create a Branch: Create a new branch for your feature or bug fix.
 3. Submit a Pull Request: Once your changes are ready, submit a pull request for review.
 
-## License
-This project is licensed under the MIT License.
-
 ## Contact Information
 - **Author**: Soham Patil
 - **Email**: [sohammpatil0711@gmail.com](mailto:sohammpatil0711@gmail.com)
